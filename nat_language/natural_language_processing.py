@@ -71,19 +71,42 @@ print(bow4.shape)
 
 bow_transformer.get_feature_names()[4068]
 
+messages_bow = bow_transformer.transform(messages['message'])
+print('Shape of Sparse Matrix: ', messages_bow.shape)
 
+messages_bow.nnz
 
+sparsity = (100.0 * messages_bow.nnz / (messages_bow.shape[0] * messages_bow.shape[1]))
+print('sparsity: {}'.format(sparsity))
 
+from sklearn.feature_extraction.text import TfidfTransformer
+tfidf_transformer = TfidfTransformer().fit(messages_bow)
+tfidf4 = tfidf_transformer.transform(bow4)
+print(tfidf4)
 
+tfidf_transformer.idf_[bow_transformer.vocabulary_['university']]
 
+messages_tfidf = tfidf_transformer.transform(messages_bow)
+from sklearn.naive_bayes import MultinomialNB
+spam_detect_model = MultinomialNB().fit(messages_tfidf, messages['label'])
+spam_detect_model.predict(tfidf4)[0]
+messages['label'][3]
 
+all_pred = spam_detect_model.predict(messages_tfidf)
+all_pred
 
+from sklearn.model_selection import train_test_split
+msg_train, msg_test, label_train, label_test = train_test_split(messages['message'], messages['label'], test_size=0.3, random_state=101)
 
+from sklearn.pipeline import Pipeline
+pipeline = Pipeline([
+    ('bow', CountVectorizer(analyzer=text_process)),
+    ('tfidf', TfidfTransformer()),
+    ('classifier', MultinomialNB())
+])
 
+pipeline.fit(msg_train, label_train)
 
-
-
-
-
-
-
+predictions = pipeline.predict(msg_test)
+from sklearn.metrics import classification_report
+print(classification_report(label_test, predictions))
