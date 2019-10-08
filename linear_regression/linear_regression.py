@@ -36,3 +36,17 @@ from sklearn.datasets import load_boston
 boston = load_boston()
 boston.keys()
 print(boston['DESCR'])
+
+predictions = lm.predict(X_test)
+predictions
+
+plt.scatter(y_test, predictions)
+
+sns.distplot((y_test-predictions))
+
+from sklearn import metrics
+metrics.mean_absolute_error(y_test, predictions)
+
+metrics.mean_squared_error(y_test, predictions)
+
+np.sqrt(metrics.mean_squared_error(y_test, predictions))
